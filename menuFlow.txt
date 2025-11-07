@@ -1,0 +1,47 @@
+LOGIN 
+.
+.
+.
+.
+
+GIOCA : 
+	- CREA LOBBY 
+		- SELEZIONA PRIVATO / PUBBLICO
+			- LobbyCreateService.run(ownerId: number, isPrivate: boolean): Lobby | null
+				- ownerId in attesa 
+				- POSSIBILITA' DI CAMBIARE PRIVACY
+					- LobbySetPrivacyByIdService.run(lobbyId: number, isPrivate: boolean): Lobby | null
+	- ENTRA NELLA LOBBY
+		- MATCHMAKING SU INVITO
+			- LobbyJoinByIdService.run(lobbyId: number, guestId: number): Lobby | null
+		- MATCHMAKING RANDOMICO
+			- LobbyJoinByRandomService.run(guestId: number): Lobby | null
+
+CLASSIFICHE: 
+	CERCA GIOCATORI:
+		- BARRA RICERCA CON PAROLA CHIAVE 
+			- UserFindByKeywordService.run(search: string): User[] | null
+				- ELENCO GIOCATORI
+					- MOSTRA INFO SU USER SELEZIONATO
+						- UserFindByIdService.run(id: number): User | null
+							- MOSTRA HISTORY
+								- HistoryFindByUserId.run(userId: number): History | null
+
+	LISTA GIOCATORI: 
+		- ELENCO GIOCATORI:
+			- ORDINA PER:  
+				- UserFindAllOrderByService.run(orderClause: string, orderType: string): User[] | null
+					- MOSTRA INFO SU USER SELEZIONATO
+						- UserFindByIdService.run(id: number): User | null
+							- MOSTRA HISTORY
+								- HistoryFindByUserId.run(userId: number): History | null
+
+STATISTICHE: 
+	- MOSTRA RATEO W/L
+		- HistoryFindByUserIdService.run(userId: number) (mostra Math.floor(win/lose)): History | null
+	- MOSTRA ELENCO PARTITE 
+		- LobbyFindByPlayerIdService.run(userId: number): Lobby[] | null
+
+PROFILO: 
+	- MODIFICA PROFILO 
+	- LOGOUT 

@@ -1,0 +1,54 @@
+DOPO MATCHMAKING: 
+.
+.
+.
+.
+
+"CREAZIONE" CAMPO PLACED: 
+    - FieldGetPlacedService.run(lobbyId: number, playerId: number): Field | null
+    
+CREAZIONE NAVI DI DEFAULT (4x1, 3x2, 2x3, 1x4):
+    - ShipParentCreateService.run(playerId: number, lobbyId: number, dimension: number): ShipParent | null
+
+    SCHIERAMENTO NAVI: 
+        - ShipParentPlaceByIdService.run(playerId: number, parentId: number, coordinates: number): ShipParent | null
+
+    SONO PRONTO: 
+        - LobbySetReadyByLobbyIdUserId.run(playerId: number, lobbyId: number): Lobby | null
+
+    CONTROLLA WINNER: 
+        - LobbyFindByPlayerId(lobbyId: number).winnerId     //Se winnerId == null continuiamo, altrimenti abbiamo finito
+
+    ASPETTO TURNO:
+        - LobbyFindByIdService.run(lobbyId) (lobby.turn == -1 wait, lobby.turn == playerId gioco)
+    
+    GENERO CAMPO HIT:
+        - FieldGetHittedService.run(lobbyId: number, playerId: number): Field | null
+
+        FASE DI CACCIA: 
+        SELEZIONO CASELLA: 
+            - ActionCreateService.run('hit'): Action | null
+            - FieldHitResponseService.run(lobbyId: number, playerId: number, action:Action): boolean
+            
+            NON COLPITO:
+                - LobbyUpdateTurnByIdService.run(lobbyId): Lobby | null
+
+            COLPITO:
+                - ShipChildHitted.run(shipChildId: number): ShipChild | null
+
+                    (a cascata tutto dentro ShipChildHitted):
+                    HO COLPITO TUTTI I CHILD: 
+                        - ShipParentSetStatus(parentId: number, newStatus: "died"): ShipParent | null
+                    
+                            HO COLPITO TUTTI I PARENT: 
+                            - lobbyEndGameService.run(lobbyId: number, loserId: number): Lobby | null        
+                
+                - RITORNA A GENERO CAMPO HIT
+
+        TASTO DI QUIT / INATTIVITA':
+            - LobbyEndGameService.run(lobbyId: number, loserId: number)  //Il loser è sempre quello che chiama l'end game 
+
+        TASTO UNDO: 
+            - ActionUndoService.run(lobbyId: number, playerId: number)
+
+

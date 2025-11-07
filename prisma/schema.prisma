@@ -1,0 +1,90 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "../generated/prisma"
+  moduleFormat           = "cjs"
+
+  // binaryTargets          = ["native", "linux-musl-arm64-openssl-3.0.x", "linux-arm64-openssl-1.1.x"]
+  // generatedFileExtension = "ts"
+  // runtime                = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgres://root:admin@127.0.0.1:5432/root"   
+
+  // url      = env("DATABASE_URL")
+}
+
+model users {
+  id             Int      @id @default(autoincrement())
+  username       String   @db.VarChar(50)
+  name           String?  @db.VarChar(30)
+  surname        String?  @db.VarChar(30)
+  email          String   @unique
+  password       String   @db.VarChar(50)
+  actions        action[] 
+  lobbiesAsUser1 lobby[]  @relation("User1Ref")
+  lobbiesAsUser2 lobby[]  @relation("User2Ref")
+  ships          shipParent[]
+  history        history?
+}
+
+model history {
+  id     Int   @id @default(autoincrement())
+  win    Int
+  lose   Int
+  match  Int
+  userId Int   @unique
+  user   users @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model lobby {
+  id         Int          @id @default(autoincrement())
+  user1_id   Int?
+  user2_id   Int?
+  play_time  DateTime?
+  winner_id  Int?
+  is_private Boolean
+  turn       Int
+  is_ready1  Boolean
+  is_ready2  Boolean
+  actions    action[]
+  user1      users?       @relation("User1Ref", fields: [user1_id], references: [id])
+  user2      users?       @relation("User2Ref", fields: [user2_id], references: [id])
+  ships      shipParent[]
+}
+
+model shipChild {
+  id        Int        @id @default(autoincrement())
+  parent_id Int
+  status    String     @db.VarChar(20)
+  x         Int?
+  y         Int?
+  actions   action[]
+  parent    shipParent @relation(fields: [parent_id], references: [id], onDelete: Cascade)
+}
+
+model shipParent {
+  id           Int         @id @default(autoincrement())
+  dimension    Int  
+  hitted_child Int
+  status       String      @db.VarChar(20)      
+  player_id    Int
+  lobby_id     Int
+  child        shipChild[]                                
+  lobby        lobby       @relation(fields: [lobby_id], references: [id])
+  player       users       @relation(fields: [player_id], references: [id])
+}
+
+model action {
+  id        Int        @id @default(autoincrement())
+  status    String     @db.VarChar(20)
+  x         Int
+  y         Int
+  ship_id   Int?
+  lobby_id  Int
+  player_id Int
+  lobby     lobby      @relation(fields: [lobby_id], references: [id])
+  player    users      @relation(fields: [player_id], references: [id])
+  ship      shipChild? @relation(fields: [ship_id], references: [id])
+}
